@@ -434,7 +434,7 @@
     <!-- Loading Screen -->
     <div id="loading">
         <div class="spinner"></div>
-        <div id="loading-text">正在初始化圣诞魔法...</div>
+        <div id="loading-text">Зул сарын ид шидийг эхлүүлж байна...</div>
     </div>
 
     <!-- Audio Element for Christmas Music -->
@@ -472,98 +472,98 @@
     <div id="ui-overlay">
         <!-- Header -->
         <div id="header">
-            <h1>✨ 圣诞树魔法 ✨</h1>
-            <div id="status">做一个手势开始</div>
+            <h1>✨ Зул сарын модны ид шид ✨</h1>
+            <div id="status">Гар дохио хийж эхлүүлнэ шүү</div>
         </div>
 
         <!-- Controls Panel -->
         <div id="controls">
-            <h2>🎄 手势控制</h2>
+            <h2>🎄 Гар дохиогоор удирдах</h2>
             <div class="gesture-item">
                 <span class="gesture-icon">✊</span>
-                <strong>拳头:</strong> 形成圣诞树
+                <strong>Гар зангидах:</strong> Зул сарын модны хэлбэр бүтээх
             </div>
             <div class="gesture-item">
                 <span class="gesture-icon">✋</span>
-                <strong>张开手掌:</strong> 分散并旋转
+                <strong>Гараа дэлгэ:</strong> Тараах
             </div>
             <div class="gesture-item">
                 <span class="gesture-icon">🤏</span>
-                <strong>捏合:</strong> 聚焦照片
+                <strong>Хуруугаа чимхэх:</strong> Фокуслах
             </div>
             <div class="gesture-item">
                 <span class="gesture-icon">✌️</span>
-                <strong>胜利手势:</strong> 画廊模式
+                <strong>Peace:</strong> Албум
             </div>
             <div class="gesture-item">
                 <span class="gesture-icon">🤲</span>
-                <strong>双手:</strong> 缩放照片
+                <strong>Хоёр гар дэлгэх:</strong> Томруулах
             </div>
             <div class="gesture-item">
                 <span class="gesture-icon">👍👍</span>
-                <strong>双手点赞:</strong> 烟花效果
+                <strong>Хоёр эрхий хуруу гозойлгох:</strong> Сальют
             </div>
         </div>
 
         <!-- Upload Container -->
         <div id="upload-container">
-            <button id="upload-btn">📷 上传照片</button>
+            <button id="upload-btn">📷 Зураг Upload</button>
             <input type="file" id="file-input" accept="image/*" multiple>
         </div>
 
         <!-- Music Control -->
         <div id="music-control">
-            <button id="music-btn">🎵 播放音乐</button>
+            <button id="music-btn">🎵 Play Music tho</button>
             <div id="volume-control">
                 <span>🔊</span>
                 <input type="range" id="volume-slider" min="0" max="100" value="50">
             </div>
-            <button id="change-music-btn" class="music-settings-btn">🎼 更换音乐</button>
+            <button id="change-music-btn" class="music-settings-btn">🎼 Дуу соль</button>
         </div>
 
         <!-- Music Source Selection Panel -->
         <div id="music-source-panel">
             <button id="close-source-panel">×</button>
-            <h3>🎵 选择音乐源</h3>
+            <h3>🎵 Хөгжим сонгох</h3>
             
             <!-- Option 1: Upload MP3 -->
             <div class="source-option" id="file-drop-zone">
-                <label>📁 上传MP3文件</label>
+                <label>📁 mp3 файлд оруулах</label>
                 <input type="file" id="music-file-input" accept="audio/*" style="display: none;">
                 <button class="file-upload-btn" onclick="document.getElementById('music-file-input').click()">
-                    选择文件
+                    Файл сонго
                 </button>
                 <div style="margin-top: 10px; font-size: 0.85em; color: rgba(255,255,255,0.7); text-align: center;">
-                    或直接拖放音频文件到这里
+                    Аудио файлаа шууд ийшээ чирж болно
                 </div>
             </div>
 
             <!-- Option 2: Suno/URL -->
             <div class="source-option">
-                <label>🔗 粘贴音乐链接 (Suno, URL等)</label>
+                <label>🔗 Suno URL оруулах</label>
                 <input type="url" id="music-url-input" placeholder="https://cdn.suno.ai/...mp3 或其他音频URL">
                 <button class="url-load-btn" onclick="loadMusicFromURL()">
-                    加载音乐
+                    Play
                 </button>
                 <div style="margin-top: 10px; font-size: 0.85em; color: rgba(255,255,255,0.7);">
-                    💡 提示: 支持任何直接的音频URL<br>
-                    • Suno生成的音乐链接<br>
-                    • 公开的MP3文件URL<br>
-                    • 其他音频CDN链接
+                    💡 URL дэмжих<br>
+                    • Suno-оос үүсгэсэн URL<br>
+                    • Local mp3 URL<br>
+                    • CDN холбоос
                 </div>
             </div>
 
             <!-- Quick Examples -->
             <div class="source-option" style="background: rgba(96, 165, 250, 0.1); border-color: rgba(96, 165, 250, 0.3);">
-                <label>⚡ 快速示例</label>
+                <label>⚡ Жишээ</label>
                 <button class="url-load-btn" onclick="loadExampleMusic()" style="background: linear-gradient(135deg, #fbbf24, #f59e0b);">
-                    使用示例音乐
+                    Жишээг тоглуулах
                 </button>
             </div>
 
             <!-- Current Track Info -->
             <div id="current-track-info" style="display: none;">
-                <strong>当前播放:</strong> <span id="track-name">无</span>
+                <strong>Одоогоор тоглож буй:</strong> <span id="track-name">无</span>
             </div>
         </div>
 
@@ -575,7 +575,7 @@
 
         <!-- Help Text -->
         <div id="help-text">
-            按 'H' 隐藏/显示界面 | 按 'M' 或 '空格' 播放/暂停音乐
+            'H' дарж интерфэйс нуух, 'M' эсхүл 'Space' дарж хөгжим тоглуулж болно шүү \n Contact: d.odkhuu95@gmail.com
         </div>
     </div>
 
@@ -644,7 +644,7 @@
         // Web Audio API lets us analyze audio frequencies in real-time
         // We use this to make particles "dance" to the music!
 
-        let currentTrackName = '在线音频';
+        let currentTrackName = 'Online tho';
         let audioSourceType = 'url'; // 'url', 'file', 'uploaded'
 
         function initMusic() {
@@ -653,13 +653,13 @@
 
             // Add error handling for audio loading
             music.addEventListener('error', (e) => {
-                console.error('音频加载失败:', e);
-                updateStatus('⚠️ 音频加载失败 - 请上传MP3或粘贴链接');
+                console.error('Амжилтгүй:', e);
+                updateStatus('⚠️ Амжилтгүй - Файл оруулах эсхүл URL оруул');
             });
 
             music.addEventListener('canplay', () => {
-                console.log('音频已准备好播放');
-                updateStatus('✅ 音频加载成功！');
+                console.log('Дуу тоглуулахад бэлэн');
+                updateStatus('✅ Амжилттай！');
             });
 
             // Music play/pause button
@@ -727,7 +727,7 @@
                         // Create a fake event for handleMusicFileUpload
                         handleMusicFileUpload({ target: { files: [file] } });
                     } else {
-                        alert('请拖放音频文件！\n支持格式: MP3, WAV, OGG, M4A等');
+                        alert('Дэмжигдэх форматууд: MP3, WAV, OGG, M4A гэх мэт');
                     }
                 }
             }, false);
@@ -739,11 +739,11 @@
             if (!file) return;
 
             if (!file.type.startsWith('audio/')) {
-                alert('请选择音频文件！');
+                alert('Файл сонго！');
                 return;
             }
 
-            updateStatus('⏳ 正在加载音乐文件...');
+            updateStatus('⏳ Ачааллаж байна...');
 
             // Stop current music if playing
             if (musicPlaying) {
@@ -771,12 +771,12 @@
 
             // Auto play if music was playing before
             music.addEventListener('canplay', function onCanPlay() {
-                updateStatus(`✅ 已加载: ${currentTrackName}`);
+                updateStatus(`✅ Болсон: ${currentTrackName}`);
                 toggleMusic(); // Auto start playing
                 music.removeEventListener('canplay', onCanPlay);
             }, { once: true });
 
-            console.log('已加载文件:', file.name);
+            console.log('Ачааллаж байна:', file.name);
         }
 
         // Handle music URL (Suno, etc.)
@@ -785,7 +785,7 @@
             const url = urlInput.value.trim();
 
             if (!url) {
-                alert('请输入音乐链接！');
+                alert('URL оруул！');
                 return;
             }
 
@@ -793,11 +793,11 @@
             try {
                 new URL(url);
             } catch (e) {
-                alert('URL格式不正确！\n\n示例:\nhttps://cdn.suno.ai/xxxxx.mp3\nhttps://example.com/music.mp3');
+                alert('URL формат буруу！\n\nЖишээ:\nhttps://cdn.suno.ai/xxxxx.mp3\nhttps://example.com/music.mp3');
                 return;
             }
 
-            updateStatus('⏳ 正在加载音乐...');
+            updateStatus('⏳ Ачааллаж байна...');
 
             // Stop current music if playing
             if (musicPlaying) {
@@ -822,18 +822,18 @@
 
             // Handle load events
             music.addEventListener('canplay', function onCanPlay() {
-                updateStatus(`✅ 已加载: ${currentTrackName}`);
+                updateStatus(`✅ Болсон: ${currentTrackName}`);
                 toggleMusic(); // Auto start playing
                 music.removeEventListener('canplay', onCanPlay);
             }, { once: true });
 
             music.addEventListener('error', function onError(e) {
-                updateStatus('❌ 加载失败 - 请检查URL是否正确');
-                alert('音乐加载失败！\n\n可能原因:\n1. URL不正确\n2. 文件不存在\n3. CORS限制\n4. 网络问题\n\n建议: 使用本地文件上传功能');
+                updateStatus('❌ Амжилтгүй, URL шалгана уу');
+                alert('Амжилтгүй！\n\nБоломжит шалтгаанууд:\n1. URL буруу\n2. Файл оруулаагүй\n3. CORS хязгаарлалт\n4. Сүлжээний асуудал?\n\nЗөвлөмж: URL ашиглахын оронд локал файл байршуулах функцийг ашиглана уу');
                 music.removeEventListener('error', onError);
             }, { once: true });
 
-            console.log('正在加载URL:', url);
+            console.log('URL Ачааллаж байна:', url);
         }
 
         // Load example music
@@ -871,9 +871,9 @@
                 source.connect(analyser);
                 analyser.connect(audioContext.destination);
                 
-                console.log('Web Audio API 初始化成功');
+                console.log('Web Audio API Амжилттай');
             } catch (error) {
-                console.error('Web Audio API 初始化失败:', error);
+                console.error('Web Audio API Амжилтгүй:', error);
                 // Audio will still play, just without visualization
             }
         }
@@ -883,10 +883,10 @@
             
             if (musicPlaying) {
                 music.pause();
-                musicBtn.textContent = '🎵 播放音乐';
+                musicBtn.textContent = '🎵 Тоглуулах';
                 musicBtn.classList.remove('playing');
                 musicPlaying = false;
-                console.log('音乐已暂停');
+                console.log('Түр зогсоох');
             } else {
                 // Initialize Web Audio API on first play
                 initWebAudioAPI();
@@ -894,7 +894,7 @@
                 // Resume audio context if suspended (browser policy)
                 if (audioContext && audioContext.state === 'suspended') {
                     audioContext.resume().then(() => {
-                        console.log('音频上下文已恢复');
+                        console.log('Сэргээгдэж боллоо');
                     });
                 }
                 
@@ -904,22 +904,22 @@
                 if (playPromise !== undefined) {
                     playPromise.then(() => {
                         // Playback started successfully
-                        musicBtn.textContent = '⏸️ 暂停音乐';
+                        musicBtn.textContent = '⏸️ Түр зогсоох';
                         musicBtn.classList.add('playing');
                         musicPlaying = true;
-                        updateStatus('🎵 音乐播放中');
-                        console.log('音乐开始播放');
+                        updateStatus('🎵 Тоглож байна');
+                        console.log('Тоглож эхлүүллээ');
                     }).catch(error => {
-                        console.error('播放失败:', error);
-                        updateStatus('❌ 播放失败: ' + error.message);
+                        console.error('Алдаа:', error);
+                        updateStatus('❌ Амжилтгүй: ' + error.message);
                         
                         // Show helpful error message
                         if (error.name === 'NotAllowedError') {
-                            alert('浏览器阻止了自动播放。请点击按钮再次尝试。');
+                            alert('Хөтөч автоматаар тоглуулахыг хорьсон байна. Товч дээр дарж дахин оролдоно уу');
                         } else if (error.name === 'NotSupportedError') {
-                            alert('音频格式不支持。请使用本地MP3文件。\n\n将MP3文件放在同一文件夹，然后修改HTML中的音频源路径。');
+                            alert('удио формат дэмжигдэхгүй байна. Локал MP3 файлыг ашиглана уу \n\nMP3 файлыг ижил хавтсанд байрлуулаад HTML доторх аудио эхийн замыг өөрчлөнө үү');
                         } else {
-                            alert('音频加载失败。\n\n建议:\n1. 使用本地MP3文件\n2. 检查网络连接\n3. 尝试其他浏览器（Chrome/Safari）');
+                            alert('Аудио ачааллаж чадсангүй\n\nЗөвлөмж:\n1. Local mp3 файл ашигла\n2. Сүлжээ, холболт шалга\n3. Өөр хөтөч ашиглах');
                         }
                     });
                 }
@@ -1193,7 +1193,7 @@
             }
 
             currentMode = 'tree';
-            updateStatus('🎄 圣诞树已形成！');
+            updateStatus('🎄 Гацуур мод бүрдлээ！');
         }
 
         // ============================================
@@ -1211,7 +1211,7 @@
 
             currentMode = 'dispersed';
             rotationEnabled = true;
-            updateStatus('✋ 已分散 - 场景旋转中');
+            updateStatus('✋ Тархалт хийгдэж байна');
         }
 
         // ============================================
@@ -1248,7 +1248,7 @@
                         const texture = new THREE.TextureLoader().load(e.target.result);
                         uploadedPhotos.push(texture);
                         createPhotoMesh(texture);
-                        updateStatus(`📷 照片已添加！总计: ${uploadedPhotos.length}`);
+                        updateStatus(`📷 Зураг нэмлээ: ${uploadedPhotos.length}`);
                     };
                     
                     reader.readAsDataURL(file);
@@ -1278,7 +1278,7 @@
 
         function showPhotoFocus() {
             if (uploadedPhotos.length === 0) {
-                updateStatus('📷 请先上传照片！');
+                updateStatus('📷 Зургаа байршуулах！');
                 return;
             }
 
@@ -1300,12 +1300,12 @@
             focusedPhotoMesh = randomPhoto;
 
             currentMode = 'photo';
-            updateStatus('🤏 照片聚焦模式 | 🤲 双手可缩放');
+            updateStatus('🤏 Төвлөрсөн горим | 🤲 Хоёр гараа томруулж жижгэрүүлэх боломжтой шүү');
         }
 
         function showGallery() {
             if (uploadedPhotos.length === 0) {
-                updateStatus('📷 请先上传照片！');
+                updateStatus('📷 Эхлээд зургаа байршуул！');
                 return;
             }
 
@@ -1331,7 +1331,7 @@
             });
 
             currentMode = 'gallery';
-            updateStatus('✌️ 画廊模式');
+            updateStatus('✌️ Албум');
         }
 
         function hidePhotos() {
@@ -1394,7 +1394,7 @@
 
             } catch (error) {
                 console.error('Error accessing webcam:', error);
-                updateStatus('❌ 摄像头访问被拒绝');
+                updateStatus('❌ Камерын хандалтаа өгнө үү');
             }
         }
 
@@ -1604,7 +1604,7 @@
                 if (!fireworksActive) {
                     triggerFireworks();
                     fireworksActive = true;
-                    updateStatus('👍👍 烟花特效！');
+                    updateStatus('👍👍 Салют！');
                 }
             } else {
                 fireworksActive = false;
@@ -1627,7 +1627,7 @@
                         currentPhotoScale * 1.5
                     );
                     
-                    updateStatus(`🤲 双手缩放: ${Math.round(currentPhotoScale * 100)}%`);
+                    updateStatus(`🤲 Хоёр гараа томруулж жижигрүүлэх: ${Math.round(currentPhotoScale * 100)}%`);
                 }
                 lastHandDistance = distance;
             } else {
@@ -1797,7 +1797,7 @@
                 // Hide loading screen
                 setTimeout(() => {
                     document.getElementById('loading').style.display = 'none';
-                    updateStatus('👋 做一个手势来交互');
+                    updateStatus('👋 Дохио хийнэ үү');
                 }, 2000);
 
             } catch (error) {

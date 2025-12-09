@@ -1,0 +1,1813 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interactive 3D Christmas Tree</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            overflow: hidden;
+            background: #000;
+            color: #d4af37;
+        }
+
+        #canvas-container {
+            width: 100vw;
+            height: 100vh;
+            position: relative;
+        }
+
+        /* UI Overlay */
+        #ui-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 100;
+            transition: opacity 0.3s;
+        }
+
+        #ui-overlay.hidden {
+            opacity: 0;
+        }
+
+        /* Header */
+        #header {
+            position: absolute;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            text-align: center;
+            pointer-events: auto;
+        }
+
+        h1 {
+            font-size: 2.5em;
+            color: #d4af37;
+            text-shadow: 0 0 20px rgba(212, 175, 55, 0.8);
+            margin-bottom: 10px;
+        }
+
+        #status {
+            font-size: 1.1em;
+            color: #fff;
+            background: rgba(0, 0, 0, 0.7);
+            padding: 10px 20px;
+            border-radius: 25px;
+            border: 2px solid #d4af37;
+            display: inline-block;
+        }
+
+        /* Webcam Preview */
+        #webcam-container {
+            position: absolute;
+            bottom: 20px;
+            right: 20px;
+            width: 320px;
+            height: 240px;
+            border: 3px solid #d4af37;
+            border-radius: 15px;
+            overflow: hidden;
+            background: #000;
+            box-shadow: 0 0 30px rgba(212, 175, 55, 0.5);
+            transition: all 0.3s;
+        }
+
+        #webcam-container.two-hands {
+            border-color: #00ff00;
+            box-shadow: 0 0 40px rgba(0, 255, 0, 0.8);
+        }
+
+        #webcam {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transform: scaleX(-1);
+        }
+
+        #hand-canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            transform: scaleX(-1);
+        }
+
+        /* Controls Panel */
+        #controls {
+            position: absolute;
+            top: 120px;
+            left: 20px;
+            background: rgba(0, 0, 0, 0.8);
+            padding: 20px;
+            border-radius: 15px;
+            border: 2px solid #d4af37;
+            max-width: 300px;
+            pointer-events: auto;
+        }
+
+        #controls h2 {
+            margin-bottom: 15px;
+            font-size: 1.3em;
+        }
+
+        .gesture-item {
+            margin: 10px 0;
+            padding: 10px;
+            background: rgba(212, 175, 55, 0.1);
+            border-radius: 8px;
+            border-left: 3px solid #d4af37;
+        }
+
+        .gesture-icon {
+            font-size: 1.5em;
+            margin-right: 10px;
+        }
+
+        /* Photo Upload Button */
+        #upload-container {
+            position: absolute;
+            bottom: 20px;
+            left: 20px;
+            pointer-events: auto;
+        }
+
+        #upload-btn {
+            background: linear-gradient(135deg, #d4af37, #aa8a2e);
+            color: #000;
+            padding: 15px 30px;
+            border: none;
+            border-radius: 30px;
+            font-size: 1.1em;
+            font-weight: bold;
+            cursor: pointer;
+            box-shadow: 0 0 20px rgba(212, 175, 55, 0.6);
+            transition: all 0.3s;
+        }
+
+        #upload-btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 0 30px rgba(212, 175, 55, 0.9);
+        }
+
+        #file-input {
+            display: none;
+        }
+
+        /* Music Control Button */
+        #music-control {
+            position: absolute;
+            bottom: 90px;
+            left: 20px;
+            pointer-events: auto;
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        #music-btn {
+            background: linear-gradient(135deg, #d4af37, #aa8a2e);
+            color: #000;
+            padding: 15px 30px;
+            border: none;
+            border-radius: 30px;
+            font-size: 1.1em;
+            font-weight: bold;
+            cursor: pointer;
+            box-shadow: 0 0 20px rgba(212, 175, 55, 0.6);
+            transition: all 0.3s;
+        }
+
+        #music-btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 0 30px rgba(212, 175, 55, 0.9);
+        }
+
+        #music-btn.playing {
+            background: linear-gradient(135deg, #ff0000, #cc0000);
+            animation: pulse 1.5s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% {
+                box-shadow: 0 0 20px rgba(212, 175, 55, 0.6);
+            }
+            50% {
+                box-shadow: 0 0 40px rgba(212, 175, 55, 1);
+            }
+        }
+
+        #volume-control {
+            background: rgba(0, 0, 0, 0.8);
+            padding: 10px 15px;
+            border-radius: 20px;
+            border: 2px solid #d4af37;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        #volume-slider {
+            width: 100px;
+            accent-color: #d4af37;
+        }
+
+        #audio-status {
+            color: #fff;
+            font-size: 0.8em;
+            margin-top: 5px;
+            text-align: center;
+        }
+
+        /* Music Source Options */
+        #music-source-panel {
+            position: absolute;
+            bottom: 90px;
+            left: 20px;
+            background: rgba(0, 0, 0, 0.9);
+            padding: 20px;
+            border-radius: 15px;
+            border: 2px solid #d4af37;
+            min-width: 350px;
+            display: none;
+            pointer-events: auto;
+            z-index: 200;
+        }
+
+        #music-source-panel.show {
+            display: block;
+        }
+
+        #music-source-panel h3 {
+            color: #d4af37;
+            margin-bottom: 15px;
+            font-size: 1.2em;
+        }
+
+        .source-option {
+            margin: 15px 0;
+            padding: 15px;
+            background: rgba(212, 175, 55, 0.1);
+            border-radius: 10px;
+            border: 1px solid rgba(212, 175, 55, 0.3);
+            transition: all 0.3s;
+        }
+
+        .source-option.drag-over {
+            background: rgba(74, 222, 128, 0.2);
+            border-color: #4ade80;
+            transform: scale(1.02);
+        }
+
+        .source-option label {
+            display: block;
+            color: #fff;
+            margin-bottom: 8px;
+            font-weight: bold;
+        }
+
+        .source-option input[type="text"],
+        .source-option input[type="url"] {
+            width: 100%;
+            padding: 10px;
+            border-radius: 8px;
+            border: 1px solid #d4af37;
+            background: rgba(0, 0, 0, 0.5);
+            color: #fff;
+            font-size: 0.9em;
+        }
+
+        .source-option input::placeholder {
+            color: rgba(255, 255, 255, 0.5);
+        }
+
+        .source-option button {
+            margin-top: 8px;
+        }
+
+        .file-upload-btn {
+            background: linear-gradient(135deg, #4ade80, #22c55e);
+            color: #000;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 20px;
+            font-size: 1em;
+            font-weight: bold;
+            cursor: pointer;
+            box-shadow: 0 0 15px rgba(74, 222, 128, 0.4);
+            transition: all 0.3s;
+            width: 100%;
+        }
+
+        .file-upload-btn:hover {
+            transform: scale(1.02);
+            box-shadow: 0 0 25px rgba(74, 222, 128, 0.6);
+        }
+
+        .url-load-btn {
+            background: linear-gradient(135deg, #60a5fa, #3b82f6);
+            color: #fff;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 20px;
+            font-size: 1em;
+            font-weight: bold;
+            cursor: pointer;
+            box-shadow: 0 0 15px rgba(96, 165, 250, 0.4);
+            transition: all 0.3s;
+            width: 100%;
+        }
+
+        .url-load-btn:hover {
+            transform: scale(1.02);
+            box-shadow: 0 0 25px rgba(96, 165, 250, 0.6);
+        }
+
+        #close-source-panel {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: rgba(255, 255, 255, 0.2);
+            border: none;
+            color: #fff;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 1.2em;
+            line-height: 1;
+            transition: all 0.3s;
+        }
+
+        #close-source-panel:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: rotate(90deg);
+        }
+
+        #current-track-info {
+            margin-top: 10px;
+            padding: 10px;
+            background: rgba(74, 222, 128, 0.1);
+            border-radius: 8px;
+            border-left: 3px solid #4ade80;
+            font-size: 0.85em;
+            color: #4ade80;
+        }
+
+        .music-settings-btn {
+            background: linear-gradient(135deg, #a78bfa, #8b5cf6);
+            color: #fff;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 20px;
+            font-size: 0.9em;
+            font-weight: bold;
+            cursor: pointer;
+            box-shadow: 0 0 15px rgba(167, 139, 250, 0.4);
+            transition: all 0.3s;
+            margin-top: 10px;
+        }
+
+        .music-settings-btn:hover {
+            transform: scale(1.02);
+            box-shadow: 0 0 25px rgba(167, 139, 250, 0.6);
+        }
+
+        /* Loading Screen */
+        #loading {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: #000;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .spinner {
+            width: 60px;
+            height: 60px;
+            border: 4px solid rgba(212, 175, 55, 0.3);
+            border-top: 4px solid #d4af37;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        #loading-text {
+            margin-top: 20px;
+            font-size: 1.2em;
+            color: #d4af37;
+        }
+
+        /* Help Text */
+        #help-text {
+            position: absolute;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            text-align: center;
+            color: rgba(212, 175, 55, 0.7);
+            font-size: 0.9em;
+        }
+    </style>
+</head>
+<body>
+    <!-- Loading Screen -->
+    <div id="loading">
+        <div class="spinner"></div>
+        <div id="loading-text">Зул сарын ид шидийг эхлүүлж байна...</div>
+    </div>
+
+    <!-- Audio Element for Christmas Music -->
+    <!-- 
+        LEARNING NOTE: Adding Your Own Music
+        
+        RECOMMENDED: Use a local file for best compatibility!
+        
+        Option 1 - Use a local file (BEST METHOD):
+        1. Download a Christmas MP3 file
+        2. Save it in the same folder as this HTML file
+        3. Replace the src below with your filename:
+           <source src="your-music.mp3" type="audio/mpeg">
+        
+        Option 2 - Free Christmas Music Sources:
+        - Download from: https://freepd.com (search "Christmas")
+        - Download from: https://incompetech.com
+        - YouTube Audio Library: https://www.youtube.com/audiolibrary
+        
+        Option 3 - Use this working online source:
+        The current source below should work, but local files are more reliable!
+    -->
+    <audio id="xmas-music" loop>
+        <!-- Using a reliable free music source -->
+        <source src="https://cdn.pixabay.com/download/audio/2021/11/23/audio_5291c4ea24.mp3" type="audio/mpeg">
+        <!-- Fallback source -->
+        <source src="https://assets.mixkit.co/active_storage/sfx/2997/2997-preview.mp3" type="audio/mpeg">
+        Your browser does not support the audio element.
+    </audio>
+
+    <!-- Main Canvas Container -->
+    <div id="canvas-container"></div>
+
+    <!-- UI Overlay -->
+    <div id="ui-overlay">
+        <!-- Header -->
+        <div id="header">
+            <h1>✨ Зул сарын модны ид шид ✨</h1>
+            <div id="status">Гар дохио хийж эхлүүлнэ шүү</div>
+        </div>
+
+        <!-- Controls Panel -->
+        <div id="controls">
+            <h2>🎄 Гар дохиогоор удирдах</h2>
+            <div class="gesture-item">
+                <span class="gesture-icon">✊</span>
+                <strong>Гар зангидах:</strong> Зул сарын модны хэлбэр бүтээх
+            </div>
+            <div class="gesture-item">
+                <span class="gesture-icon">✋</span>
+                <strong>Гараа дэлгэ:</strong> Тараах
+            </div>
+            <div class="gesture-item">
+                <span class="gesture-icon">🤏</span>
+                <strong>Хуруугаа чимхэх:</strong> Фокуслах
+            </div>
+            <div class="gesture-item">
+                <span class="gesture-icon">✌️</span>
+                <strong>Peace:</strong> Албум
+            </div>
+            <div class="gesture-item">
+                <span class="gesture-icon">🤲</span>
+                <strong>Хоёр гар дэлгэх:</strong> Томруулах
+            </div>
+            <div class="gesture-item">
+                <span class="gesture-icon">👍👍</span>
+                <strong>Хоёр эрхий хуруу гозойлгох:</strong> Сальют
+            </div>
+        </div>
+
+        <!-- Upload Container -->
+        <div id="upload-container">
+            <button id="upload-btn">📷 Зураг Upload</button>
+            <input type="file" id="file-input" accept="image/*" multiple>
+        </div>
+
+        <!-- Music Control -->
+        <div id="music-control">
+            <button id="music-btn">🎵 Play Music tho</button>
+            <div id="volume-control">
+                <span>🔊</span>
+                <input type="range" id="volume-slider" min="0" max="100" value="50">
+            </div>
+            <button id="change-music-btn" class="music-settings-btn">🎼 Дуу соль</button>
+        </div>
+
+        <!-- Music Source Selection Panel -->
+        <div id="music-source-panel">
+            <button id="close-source-panel">×</button>
+            <h3>🎵 Хөгжим сонгох</h3>
+            
+            <!-- Option 1: Upload MP3 -->
+            <div class="source-option" id="file-drop-zone">
+                <label>📁 mp3 файлд оруулах</label>
+                <input type="file" id="music-file-input" accept="audio/*" style="display: none;">
+                <button class="file-upload-btn" onclick="document.getElementById('music-file-input').click()">
+                    Файл сонго
+                </button>
+                <div style="margin-top: 10px; font-size: 0.85em; color: rgba(255,255,255,0.7); text-align: center;">
+                    Аудио файлаа шууд ийшээ чирж болно
+                </div>
+            </div>
+
+            <!-- Option 2: Suno/URL -->
+            <div class="source-option">
+                <label>🔗 Suno URL оруулах</label>
+                <input type="url" id="music-url-input" placeholder="https://cdn.suno.ai/...mp3 或其他音频URL">
+                <button class="url-load-btn" onclick="loadMusicFromURL()">
+                    Play
+                </button>
+                <div style="margin-top: 10px; font-size: 0.85em; color: rgba(255,255,255,0.7);">
+                    💡 URL дэмжих<br>
+                    • Suno-оос үүсгэсэн URL<br>
+                    • Local mp3 URL<br>
+                    • CDN холбоос
+                </div>
+            </div>
+
+            <!-- Quick Examples -->
+            <div class="source-option" style="background: rgba(96, 165, 250, 0.1); border-color: rgba(96, 165, 250, 0.3);">
+                <label>⚡ Жишээ</label>
+                <button class="url-load-btn" onclick="loadExampleMusic()" style="background: linear-gradient(135deg, #fbbf24, #f59e0b);">
+                    Жишээг тоглуулах
+                </button>
+            </div>
+
+            <!-- Current Track Info -->
+            <div id="current-track-info" style="display: none;">
+                <strong>Одоогоор тоглож буй:</strong> <span id="track-name">无</span>
+            </div>
+        </div>
+
+        <!-- Webcam Container -->
+        <div id="webcam-container">
+            <video id="webcam" autoplay playsinline></video>
+            <canvas id="hand-canvas"></canvas>
+        </div>
+
+        <!-- Help Text -->
+        <div id="help-text">
+            'H' дарж интерфэйс нуух, 'M' эсхүл 'Space' дарж хөгжим тоглуулж болно шүү \n Contact: d.odkhuu95@gmail.com
+        </div>
+    </div>
+
+    <!-- Three.js and Dependencies -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js"></script>
+
+    <script>
+        // ============================================
+        // LEARNING NOTE: Application Structure
+        // ============================================
+        // This application follows a modular approach:
+        // 1. Configuration and Constants
+        // 2. Three.js Scene Setup
+        // 3. Particle System
+        // 4. Post-Processing Effects
+        // 5. MediaPipe Gesture Recognition
+        // 6. Photo Management
+        // 7. Interaction Logic
+        // 8. Animation Loop
+
+        // ============================================
+        // Configuration
+        // ============================================
+        const CONFIG = {
+            particleCount: 2000,
+            treeHeight: 5,
+            treeRadius: 2,
+            transitionSpeed: 0.05,
+            rotationSpeed: 0.005,
+            colors: {
+                gold: 0xd4af37,
+                green: 0x228b22,
+                white: 0xffffff,
+                red: 0xff0000
+            }
+        };
+
+        // ============================================
+        // Global State
+        // ============================================
+        let scene, camera, renderer, particles;
+        let currentMode = 'dispersed'; // 'tree', 'dispersed', 'photo', 'gallery'
+        let uploadedPhotos = [];
+        let photoMeshes = [];
+        let hands, webcam, handCanvas, handCtx;
+        let currentGesture = null;
+        let rotationEnabled = false;
+        let music, musicPlaying = false;
+        let audioContext, analyser, dataArray;
+        
+        // 双手控制变量
+        let twoHandsDetected = false;
+        let lastHandDistance = 0;
+        let currentPhotoScale = 1;
+        let focusedPhotoMesh = null;
+        
+        // 烟花效果变量
+        let fireworks = [];
+        let fireworksActive = false;
+
+        // ============================================
+        // LEARNING NOTE: Audio Visualization
+        // ============================================
+        // Web Audio API lets us analyze audio frequencies in real-time
+        // We use this to make particles "dance" to the music!
+
+        let currentTrackName = 'Online tho';
+        let audioSourceType = 'url'; // 'url', 'file', 'uploaded'
+
+        function initMusic() {
+            music = document.getElementById('xmas-music');
+            music.volume = 0.5; // Set initial volume to 50%
+
+            // Add error handling for audio loading
+            music.addEventListener('error', (e) => {
+                console.error('Амжилтгүй:', e);
+                updateStatus('⚠️ Амжилтгүй - Файл оруулах эсхүл URL оруул');
+            });
+
+            music.addEventListener('canplay', () => {
+                console.log('Дуу тоглуулахад бэлэн');
+                updateStatus('✅ Амжилттай！');
+            });
+
+            // Music play/pause button
+            const musicBtn = document.getElementById('music-btn');
+            musicBtn.addEventListener('click', toggleMusic);
+
+            // Volume control
+            const volumeSlider = document.getElementById('volume-slider');
+            volumeSlider.addEventListener('input', (e) => {
+                music.volume = e.target.value / 100;
+            });
+
+            // Change music button
+            const changeMusicBtn = document.getElementById('change-music-btn');
+            changeMusicBtn.addEventListener('click', () => {
+                document.getElementById('music-source-panel').classList.toggle('show');
+            });
+
+            // Close panel button
+            const closeBtn = document.getElementById('close-source-panel');
+            closeBtn.addEventListener('click', () => {
+                document.getElementById('music-source-panel').classList.remove('show');
+            });
+
+            // File upload handler
+            const fileInput = document.getElementById('music-file-input');
+            fileInput.addEventListener('change', handleMusicFileUpload);
+
+            // Setup drag and drop for music upload
+            setupMusicDragDrop();
+        }
+
+        // Setup drag and drop for music files
+        function setupMusicDragDrop() {
+            const dropZone = document.getElementById('file-drop-zone');
+            
+            if (!dropZone) return;
+
+            ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+                dropZone.addEventListener(eventName, preventDefaults, false);
+            });
+
+            function preventDefaults(e) {
+                e.preventDefault();
+                e.stopPropagation();
+            }
+
+            ['dragenter', 'dragover'].forEach(eventName => {
+                dropZone.addEventListener(eventName, () => {
+                    dropZone.classList.add('drag-over');
+                }, false);
+            });
+
+            ['dragleave', 'drop'].forEach(eventName => {
+                dropZone.addEventListener(eventName, () => {
+                    dropZone.classList.remove('drag-over');
+                }, false);
+            });
+
+            dropZone.addEventListener('drop', (e) => {
+                const files = e.dataTransfer.files;
+                if (files.length > 0) {
+                    const file = files[0];
+                    if (file.type.startsWith('audio/')) {
+                        // Create a fake event for handleMusicFileUpload
+                        handleMusicFileUpload({ target: { files: [file] } });
+                    } else {
+                        alert('Дэмжигдэх форматууд: MP3, WAV, OGG, M4A гэх мэт');
+                    }
+                }
+            }, false);
+        }
+
+        // Handle MP3 file upload
+        function handleMusicFileUpload(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            if (!file.type.startsWith('audio/')) {
+                alert('Файл сонго！');
+                return;
+            }
+
+            updateStatus('⏳ Ачааллаж байна...');
+
+            // Stop current music if playing
+            if (musicPlaying) {
+                music.pause();
+                musicPlaying = false;
+            }
+
+            // Create object URL for the file
+            const fileURL = URL.createObjectURL(file);
+            
+            // Set new source
+            music.src = fileURL;
+            currentTrackName = file.name;
+            audioSourceType = 'uploaded';
+
+            // Update UI
+            document.getElementById('track-name').textContent = currentTrackName;
+            document.getElementById('current-track-info').style.display = 'block';
+            
+            // Reset Web Audio API for new source
+            resetWebAudioAPI();
+
+            // Close the panel
+            document.getElementById('music-source-panel').classList.remove('show');
+
+            // Auto play if music was playing before
+            music.addEventListener('canplay', function onCanPlay() {
+                updateStatus(`✅ Болсон: ${currentTrackName}`);
+                toggleMusic(); // Auto start playing
+                music.removeEventListener('canplay', onCanPlay);
+            }, { once: true });
+
+            console.log('Ачааллаж байна:', file.name);
+        }
+
+        // Handle music URL (Suno, etc.)
+        function loadMusicFromURL() {
+            const urlInput = document.getElementById('music-url-input');
+            const url = urlInput.value.trim();
+
+            if (!url) {
+                alert('URL оруул！');
+                return;
+            }
+
+            // Validate URL format
+            try {
+                new URL(url);
+            } catch (e) {
+                alert('URL формат буруу！\n\nЖишээ:\nhttps://cdn.suno.ai/xxxxx.mp3\nhttps://example.com/music.mp3');
+                return;
+            }
+
+            updateStatus('⏳ Ачааллаж байна...');
+
+            // Stop current music if playing
+            if (musicPlaying) {
+                music.pause();
+                musicPlaying = false;
+            }
+
+            // Set new source
+            music.src = url;
+            currentTrackName = url.split('/').pop().split('?')[0] || 'Online Music';
+            audioSourceType = 'url';
+
+            // Update UI
+            document.getElementById('track-name').textContent = currentTrackName;
+            document.getElementById('current-track-info').style.display = 'block';
+
+            // Reset Web Audio API for new source
+            resetWebAudioAPI();
+
+            // Close the panel
+            document.getElementById('music-source-panel').classList.remove('show');
+
+            // Handle load events
+            music.addEventListener('canplay', function onCanPlay() {
+                updateStatus(`✅ Болсон: ${currentTrackName}`);
+                toggleMusic(); // Auto start playing
+                music.removeEventListener('canplay', onCanPlay);
+            }, { once: true });
+
+            music.addEventListener('error', function onError(e) {
+                updateStatus('❌ Амжилтгүй, URL шалгана уу');
+                alert('Амжилтгүй！\n\nБоломжит шалтгаанууд:\n1. URL буруу\n2. Файл оруулаагүй\n3. CORS хязгаарлалт\n4. Сүлжээний асуудал?\n\nЗөвлөмж: URL ашиглахын оронд локал файл байршуулах функцийг ашиглана уу');
+                music.removeEventListener('error', onError);
+            }, { once: true });
+
+            console.log('URL Ачааллаж байна:', url);
+        }
+
+        // Load example music
+        function loadExampleMusic() {
+            const exampleURL = 'https://cdn.pixabay.com/download/audio/2021/11/23/audio_5291c4ea24.mp3';
+            document.getElementById('music-url-input').value = exampleURL;
+            loadMusicFromURL();
+        }
+
+        // Reset Web Audio API for new source
+        function resetWebAudioAPI() {
+            // Close existing audio context if exists
+            if (audioContext) {
+                audioContext.close();
+                audioContext = null;
+                analyser = null;
+                dataArray = null;
+            }
+        }
+
+        // Initialize Web Audio API only when music starts playing
+        function initWebAudioAPI() {
+            if (audioContext) return; // Already initialized
+            
+            try {
+                audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                analyser = audioContext.createAnalyser();
+                analyser.fftSize = 256;
+                
+                const bufferLength = analyser.frequencyBinCount;
+                dataArray = new Uint8Array(bufferLength);
+
+                // Connect audio to analyser
+                const source = audioContext.createMediaElementSource(music);
+                source.connect(analyser);
+                analyser.connect(audioContext.destination);
+                
+                console.log('Web Audio API Амжилттай');
+            } catch (error) {
+                console.error('Web Audio API Амжилтгүй:', error);
+                // Audio will still play, just without visualization
+            }
+        }
+
+        function toggleMusic() {
+            const musicBtn = document.getElementById('music-btn');
+            
+            if (musicPlaying) {
+                music.pause();
+                musicBtn.textContent = '🎵 Тоглуулах';
+                musicBtn.classList.remove('playing');
+                musicPlaying = false;
+                console.log('Түр зогсоох');
+            } else {
+                // Initialize Web Audio API on first play
+                initWebAudioAPI();
+                
+                // Resume audio context if suspended (browser policy)
+                if (audioContext && audioContext.state === 'suspended') {
+                    audioContext.resume().then(() => {
+                        console.log('Сэргээгдэж боллоо');
+                    });
+                }
+                
+                // Try to play
+                const playPromise = music.play();
+                
+                if (playPromise !== undefined) {
+                    playPromise.then(() => {
+                        // Playback started successfully
+                        musicBtn.textContent = '⏸️ Түр зогсоох';
+                        musicBtn.classList.add('playing');
+                        musicPlaying = true;
+                        updateStatus('🎵 Тоглож байна');
+                        console.log('Тоглож эхлүүллээ');
+                    }).catch(error => {
+                        console.error('Алдаа:', error);
+                        updateStatus('❌ Амжилтгүй: ' + error.message);
+                        
+                        // Show helpful error message
+                        if (error.name === 'NotAllowedError') {
+                            alert('Хөтөч автоматаар тоглуулахыг хорьсон байна. Товч дээр дарж дахин оролдоно уу');
+                        } else if (error.name === 'NotSupportedError') {
+                            alert('удио формат дэмжигдэхгүй байна. Локал MP3 файлыг ашиглана уу \n\nMP3 файлыг ижил хавтсанд байрлуулаад HTML доторх аудио эхийн замыг өөрчлөнө үү');
+                        } else {
+                            alert('Аудио ачааллаж чадсангүй\n\nЗөвлөмж:\n1. Local mp3 файл ашигла\n2. Сүлжээ, холболт шалга\n3. Өөр хөтөч ашиглах');
+                        }
+                    });
+                }
+            }
+        }
+
+        function getAudioLevel() {
+            if (!analyser || !musicPlaying) return 0;
+            
+            analyser.getByteFrequencyData(dataArray);
+            
+            // Calculate average frequency
+            let sum = 0;
+            for (let i = 0; i < dataArray.length; i++) {
+                sum += dataArray[i];
+            }
+            return sum / dataArray.length / 255; // Normalize to 0-1
+        }
+
+        // ============================================
+        // LEARNING NOTE: Three.js Scene Setup
+        // ============================================
+        // Three.js requires three main components:
+        // 1. Scene - The 3D world container
+        // 2. Camera - The viewpoint
+        // 3. Renderer - Draws the scene to screen
+
+        function initThreeJS() {
+            // Create the scene
+            scene = new THREE.Scene();
+            scene.background = new THREE.Color(0x000000);
+            scene.fog = new THREE.Fog(0x000000, 10, 50);
+
+            // Setup camera (PerspectiveCamera simulates human eye)
+            // Parameters: FOV, aspect ratio, near clip, far clip
+            camera = new THREE.PerspectiveCamera(
+                75,
+                window.innerWidth / window.innerHeight,
+                0.1,
+                1000
+            );
+            camera.position.z = 10;
+            camera.position.y = 2;
+
+            // Create renderer
+            renderer = new THREE.WebGLRenderer({ 
+                antialias: true,
+                alpha: true 
+            });
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            renderer.setPixelRatio(window.devicePixelRatio);
+            document.getElementById('canvas-container').appendChild(renderer.domElement);
+
+            // Add lighting
+            setupLighting();
+
+            // Handle window resize
+            window.addEventListener('resize', onWindowResize);
+        }
+
+        function setupLighting() {
+            // Ambient light - provides base illumination
+            const ambientLight = new THREE.AmbientLight(0xffffff, 0.3);
+            scene.add(ambientLight);
+
+            // Spotlights for dramatic effect
+            const spotlight1 = new THREE.SpotLight(CONFIG.colors.gold, 1);
+            spotlight1.position.set(5, 10, 5);
+            spotlight1.angle = Math.PI / 6;
+            spotlight1.penumbra = 0.3;
+            spotlight1.castShadow = true;
+            spotlight1.name = 'spotlight1'; // Name for audio reactivity
+            scene.add(spotlight1);
+
+            const spotlight2 = new THREE.SpotLight(CONFIG.colors.white, 0.8);
+            spotlight2.position.set(-5, 10, -5);
+            spotlight2.angle = Math.PI / 6;
+            spotlight2.penumbra = 0.3;
+            spotlight2.name = 'spotlight2'; // Name for audio reactivity
+            scene.add(spotlight2);
+
+            // Point lights for sparkle
+            const pointLight1 = new THREE.PointLight(CONFIG.colors.gold, 0.5, 20);
+            pointLight1.position.set(0, 5, 0);
+            pointLight1.name = 'pointLight1'; // Name for audio reactivity
+            scene.add(pointLight1);
+        }
+
+        // ============================================
+        // LEARNING NOTE: Particle System
+        // ============================================
+        // Particles are represented as sprites (2D images in 3D space)
+        // Each particle has properties: position, velocity, target position
+
+        function createParticleSystem() {
+            particles = {
+                geometry: new THREE.BufferGeometry(),
+                positions: [],
+                velocities: [],
+                targetPositions: [],
+                colors: [],
+                particles: []
+            };
+
+            // Create particle data
+            for (let i = 0; i < CONFIG.particleCount; i++) {
+                // Initial random position (dispersed state)
+                const x = (Math.random() - 0.5) * 20;
+                const y = (Math.random() - 0.5) * 20;
+                const z = (Math.random() - 0.5) * 20;
+
+                particles.positions.push(x, y, z);
+                particles.velocities.push(0, 0, 0);
+                particles.targetPositions.push(x, y, z);
+
+                // Assign colors (gold, green, white, red)
+                const colorChoice = Math.random();
+                let color;
+                if (colorChoice < 0.4) {
+                    color = new THREE.Color(CONFIG.colors.gold);
+                } else if (colorChoice < 0.7) {
+                    color = new THREE.Color(CONFIG.colors.green);
+                } else if (colorChoice < 0.9) {
+                    color = new THREE.Color(CONFIG.colors.white);
+                } else {
+                    color = new THREE.Color(CONFIG.colors.red);
+                }
+                particles.colors.push(color.r, color.g, color.b);
+            }
+
+            // Set geometry attributes
+            particles.geometry.setAttribute(
+                'position',
+                new THREE.Float32BufferAttribute(particles.positions, 3)
+            );
+            particles.geometry.setAttribute(
+                'color',
+                new THREE.Float32BufferAttribute(particles.colors, 3)
+            );
+
+            // Create material with transparency
+            const material = new THREE.PointsMaterial({
+                size: 0.1,
+                vertexColors: true,
+                transparent: true,
+                opacity: 0.8,
+                blending: THREE.AdditiveBlending,
+                sizeAttenuation: true
+            });
+
+            // Create the particle system mesh
+            const particleSystem = new THREE.Points(particles.geometry, material);
+            scene.add(particleSystem);
+            particles.mesh = particleSystem;
+        }
+
+        // ============================================
+        // LEARNING NOTE: 烟花粒子系统
+        // ============================================
+        // 烟花由多个粒子组成，每个粒子有自己的速度和生命周期
+
+        class Firework {
+            constructor(x, y, z) {
+                this.particles = [];
+                this.dead = false;
+                
+                // 创建烟花粒子
+                const particleCount = 100;
+                for (let i = 0; i < particleCount; i++) {
+                    // 随机方向
+                    const theta = Math.random() * Math.PI * 2;
+                    const phi = Math.random() * Math.PI;
+                    const speed = Math.random() * 0.2 + 0.1;
+                    
+                    const particle = {
+                        position: new THREE.Vector3(x, y, z),
+                        velocity: new THREE.Vector3(
+                            Math.sin(phi) * Math.cos(theta) * speed,
+                            Math.sin(phi) * Math.sin(theta) * speed,
+                            Math.cos(phi) * speed
+                        ),
+                        life: 1.0,
+                        decay: Math.random() * 0.01 + 0.005
+                    };
+                    
+                    // 创建粒子网格
+                    const geometry = new THREE.SphereGeometry(0.05, 8, 8);
+                    const material = new THREE.MeshBasicMaterial({
+                        color: new THREE.Color().setHSL(Math.random(), 1, 0.5),
+                        transparent: true,
+                        opacity: 1
+                    });
+                    const mesh = new THREE.Mesh(geometry, material);
+                    mesh.position.copy(particle.position);
+                    scene.add(mesh);
+                    
+                    particle.mesh = mesh;
+                    this.particles.push(particle);
+                }
+            }
+            
+            update() {
+                let allDead = true;
+                
+                this.particles.forEach(particle => {
+                    if (particle.life > 0) {
+                        allDead = false;
+                        
+                        // 更新位置
+                        particle.position.add(particle.velocity);
+                        particle.velocity.y -= 0.005; // 重力
+                        
+                        // 更新生命值
+                        particle.life -= particle.decay;
+                        
+                        // 更新网格
+                        particle.mesh.position.copy(particle.position);
+                        particle.mesh.material.opacity = particle.life;
+                    } else {
+                        // 移除死亡粒子
+                        if (particle.mesh) {
+                            scene.remove(particle.mesh);
+                            particle.mesh.geometry.dispose();
+                            particle.mesh.material.dispose();
+                        }
+                    }
+                });
+                
+                this.dead = allDead;
+            }
+        }
+
+        function createFirework(x, y, z) {
+            const firework = new Firework(x, y, z);
+            fireworks.push(firework);
+        }
+
+        function updateFireworks() {
+            for (let i = fireworks.length - 1; i >= 0; i--) {
+                fireworks[i].update();
+                if (fireworks[i].dead) {
+                    fireworks.splice(i, 1);
+                }
+            }
+        }
+
+        // ============================================
+        // Christmas Tree Formation
+        // ============================================
+        function formChristmasTree() {
+            const positions = particles.geometry.attributes.position.array;
+            
+            for (let i = 0; i < CONFIG.particleCount; i++) {
+                const i3 = i * 3;
+                
+                // Create conical tree shape
+                const heightRatio = Math.random();
+                const y = heightRatio * CONFIG.treeHeight - CONFIG.treeHeight / 2;
+                
+                // Radius decreases as we go up (cone shape)
+                const radius = (1 - heightRatio) * CONFIG.treeRadius;
+                const angle = Math.random() * Math.PI * 2;
+                
+                const x = Math.cos(angle) * radius * (Math.random() * 0.8 + 0.2);
+                const z = Math.sin(angle) * radius * (Math.random() * 0.8 + 0.2);
+
+                // Set target positions
+                particles.targetPositions[i3] = x;
+                particles.targetPositions[i3 + 1] = y;
+                particles.targetPositions[i3 + 2] = z;
+            }
+
+            currentMode = 'tree';
+            updateStatus('🎄 Гацуур мод бүрдлээ！');
+        }
+
+        // ============================================
+        // Disperse Particles
+        // ============================================
+        function disperseParticles() {
+            for (let i = 0; i < CONFIG.particleCount; i++) {
+                const i3 = i * 3;
+                
+                // Random dispersed positions
+                particles.targetPositions[i3] = (Math.random() - 0.5) * 20;
+                particles.targetPositions[i3 + 1] = (Math.random() - 0.5) * 20;
+                particles.targetPositions[i3 + 2] = (Math.random() - 0.5) * 20;
+            }
+
+            currentMode = 'dispersed';
+            rotationEnabled = true;
+            updateStatus('✋ Тархалт хийгдэж байна');
+        }
+
+        // ============================================
+        // Update Particle Positions (Animation)
+        // ============================================
+        function updateParticles() {
+            const positions = particles.geometry.attributes.position.array;
+            
+            for (let i = 0; i < CONFIG.particleCount; i++) {
+                const i3 = i * 3;
+                
+                // Smoothly interpolate current position towards target
+                positions[i3] += (particles.targetPositions[i3] - positions[i3]) * CONFIG.transitionSpeed;
+                positions[i3 + 1] += (particles.targetPositions[i3 + 1] - positions[i3 + 1]) * CONFIG.transitionSpeed;
+                positions[i3 + 2] += (particles.targetPositions[i3 + 2] - positions[i3 + 2]) * CONFIG.transitionSpeed;
+            }
+            
+            particles.geometry.attributes.position.needsUpdate = true;
+        }
+
+        // ============================================
+        // LEARNING NOTE: Photo Management
+        // ============================================
+        // Photos are loaded as textures and applied to 3D planes
+
+        function handlePhotoUpload(event) {
+            const files = event.target.files;
+            
+            for (let file of files) {
+                if (file.type.startsWith('image/')) {
+                    const reader = new FileReader();
+                    
+                    reader.onload = (e) => {
+                        const texture = new THREE.TextureLoader().load(e.target.result);
+                        uploadedPhotos.push(texture);
+                        createPhotoMesh(texture);
+                        updateStatus(`📷 Зураг нэмлээ: ${uploadedPhotos.length}`);
+                    };
+                    
+                    reader.readAsDataURL(file);
+                }
+            }
+        }
+
+        function createPhotoMesh(texture) {
+            const geometry = new THREE.PlaneGeometry(3, 3);
+            const material = new THREE.MeshBasicMaterial({
+                map: texture,
+                side: THREE.DoubleSide,
+                transparent: true,
+                opacity: 0
+            });
+            
+            const mesh = new THREE.Mesh(geometry, material);
+            mesh.position.set(
+                (Math.random() - 0.5) * 10,
+                (Math.random() - 0.5) * 10,
+                -5
+            );
+            mesh.visible = false;
+            scene.add(mesh);
+            photoMeshes.push(mesh);
+        }
+
+        function showPhotoFocus() {
+            if (uploadedPhotos.length === 0) {
+                updateStatus('📷 Зургаа байршуулах！');
+                return;
+            }
+
+            // Hide particles
+            particles.mesh.visible = false;
+            
+            // Show one random photo
+            photoMeshes.forEach(mesh => mesh.visible = false);
+            const randomPhoto = photoMeshes[Math.floor(Math.random() * photoMeshes.length)];
+            randomPhoto.visible = true;
+            randomPhoto.material.opacity = 1;
+            randomPhoto.position.set(0, 0, 0);
+            
+            // 重置缩放
+            currentPhotoScale = 1;
+            randomPhoto.scale.set(1.5, 1.5, 1.5);
+            
+            // 保存当前聚焦的照片引用
+            focusedPhotoMesh = randomPhoto;
+
+            currentMode = 'photo';
+            updateStatus('🤏 Төвлөрсөн горим | 🤲 Хоёр гараа томруулж жижгэрүүлэх боломжтой шүү');
+        }
+
+        function showGallery() {
+            if (uploadedPhotos.length === 0) {
+                updateStatus('📷 Эхлээд зургаа байршуул！');
+                return;
+            }
+
+            particles.mesh.visible = false;
+            
+            // Arrange photos in a grid
+            const cols = Math.ceil(Math.sqrt(photoMeshes.length));
+            const spacing = 4;
+            
+            photoMeshes.forEach((mesh, index) => {
+                mesh.visible = true;
+                mesh.material.opacity = 1;
+                
+                const col = index % cols;
+                const row = Math.floor(index / cols);
+                
+                mesh.position.set(
+                    (col - cols / 2) * spacing,
+                    (row - Math.floor(photoMeshes.length / cols) / 2) * spacing,
+                    0
+                );
+                mesh.scale.set(1, 1, 1);
+            });
+
+            currentMode = 'gallery';
+            updateStatus('✌️ Албум');
+        }
+
+        function hidePhotos() {
+            particles.mesh.visible = true;
+            photoMeshes.forEach(mesh => {
+                mesh.visible = false;
+                mesh.material.opacity = 0;
+            });
+            focusedPhotoMesh = null;
+            lastHandDistance = 0;
+        }
+
+        // ============================================
+        // LEARNING NOTE: MediaPipe Hands
+        // ============================================
+        // MediaPipe provides real-time hand tracking
+        // It detects 21 landmarks per hand
+
+        async function initMediaPipe() {
+            // Setup webcam
+            webcam = document.getElementById('webcam');
+            handCanvas = document.getElementById('hand-canvas');
+            handCtx = handCanvas.getContext('2d');
+
+            try {
+                const stream = await navigator.mediaDevices.getUserMedia({
+                    video: { 
+                        width: 1280, 
+                        height: 720,
+                        facingMode: 'user'
+                    }
+                });
+                webcam.srcObject = stream;
+
+                // Initialize MediaPipe Hands
+                hands = new Hands({
+                    locateFile: (file) => {
+                        return `https://cdn.jsdelivr.net/npm/@mediapipe/hands/${file}`;
+                    }
+                });
+
+                hands.setOptions({
+                    maxNumHands: 2, // 支持检测两只手
+                    modelComplexity: 1,
+                    minDetectionConfidence: 0.7,
+                    minTrackingConfidence: 0.7
+                });
+
+                hands.onResults(onHandsResults);
+
+                // Start camera
+                const camera = new Camera(webcam, {
+                    onFrame: async () => {
+                        await hands.send({ image: webcam });
+                    },
+                    width: 1280,
+                    height: 720
+                });
+                camera.start();
+
+            } catch (error) {
+                console.error('Error accessing webcam:', error);
+                updateStatus('❌ Камерын хандалтаа өгнө үү');
+            }
+        }
+
+        // ============================================
+        // Gesture Recognition
+        // ============================================
+        function onHandsResults(results) {
+            // Clear canvas
+            handCtx.save();
+            handCtx.clearRect(0, 0, handCanvas.width, handCanvas.height);
+            
+            const webcamContainer = document.getElementById('webcam-container');
+
+            if (results.multiHandLandmarks && results.multiHandLandmarks.length > 0) {
+                // 检测到几只手
+                const handCount = results.multiHandLandmarks.length;
+                
+                if (handCount === 2) {
+                    // 双手模式
+                    twoHandsDetected = true;
+                    webcamContainer.classList.add('two-hands');
+                    
+                    const hand1 = results.multiHandLandmarks[0];
+                    const hand2 = results.multiHandLandmarks[1];
+                    
+                    // 绘制两只手
+                    drawHand(hand1);
+                    drawHand(hand2);
+                    
+                    // 绘制双手之间的连接线
+                    const hand1Center = hand1[0];
+                    const hand2Center = hand2[0];
+                    handCtx.strokeStyle = '#00ff00';
+                    handCtx.lineWidth = 3;
+                    handCtx.setLineDash([5, 5]);
+                    handCtx.beginPath();
+                    handCtx.moveTo(hand1Center.x * handCanvas.width, hand1Center.y * handCanvas.height);
+                    handCtx.lineTo(hand2Center.x * handCanvas.width, hand2Center.y * handCanvas.height);
+                    handCtx.stroke();
+                    handCtx.setLineDash([]);
+                    
+                    // 处理双手手势
+                    handleTwoHandGestures(hand1, hand2);
+                    
+                } else if (handCount === 1) {
+                    // 单手模式
+                    twoHandsDetected = false;
+                    webcamContainer.classList.remove('two-hands');
+                    
+                    const landmarks = results.multiHandLandmarks[0];
+                    
+                    // Draw hand skeleton
+                    drawHand(landmarks);
+                    
+                    // Recognize gesture
+                    const gesture = recognizeGesture(landmarks);
+                    
+                    if (gesture !== currentGesture) {
+                        currentGesture = gesture;
+                        handleGesture(gesture);
+                    }
+                }
+            } else {
+                twoHandsDetected = false;
+                webcamContainer.classList.remove('two-hands');
+            }
+
+            handCtx.restore();
+        }
+
+        function drawHand(landmarks) {
+            // Draw connections between landmarks
+            const connections = [
+                [0, 1], [1, 2], [2, 3], [3, 4], // Thumb
+                [0, 5], [5, 6], [6, 7], [7, 8], // Index
+                [0, 9], [9, 10], [10, 11], [11, 12], // Middle
+                [0, 13], [13, 14], [14, 15], [15, 16], // Ring
+                [0, 17], [17, 18], [18, 19], [19, 20], // Pinky
+                [5, 9], [9, 13], [13, 17] // Palm
+            ];
+
+            handCtx.strokeStyle = '#d4af37';
+            handCtx.lineWidth = 2;
+
+            connections.forEach(([start, end]) => {
+                const startPoint = landmarks[start];
+                const endPoint = landmarks[end];
+
+                handCtx.beginPath();
+                handCtx.moveTo(startPoint.x * handCanvas.width, startPoint.y * handCanvas.height);
+                handCtx.lineTo(endPoint.x * handCanvas.width, endPoint.y * handCanvas.height);
+                handCtx.stroke();
+            });
+
+            // Draw landmarks
+            landmarks.forEach((landmark, index) => {
+                // 大拇指尖特殊标记（用于点赞手势）
+                if (index === 4) {
+                    handCtx.fillStyle = '#ff0000';
+                    handCtx.beginPath();
+                    handCtx.arc(
+                        landmark.x * handCanvas.width,
+                        landmark.y * handCanvas.height,
+                        7,
+                        0,
+                        2 * Math.PI
+                    );
+                    handCtx.fill();
+                } else {
+                    handCtx.fillStyle = '#d4af37';
+                    handCtx.beginPath();
+                    handCtx.arc(
+                        landmark.x * handCanvas.width,
+                        landmark.y * handCanvas.height,
+                        5,
+                        0,
+                        2 * Math.PI
+                    );
+                    handCtx.fill();
+                }
+            });
+        }
+
+        // ============================================
+        // LEARNING NOTE: Gesture Recognition Logic
+        // ============================================
+        // We analyze finger positions to determine gestures
+        // Landmarks: 0=wrist, 4=thumb tip, 8=index tip, etc.
+
+        function recognizeGesture(landmarks) {
+            // Calculate distances between key points
+            const thumbTip = landmarks[4];
+            const indexTip = landmarks[8];
+            const middleTip = landmarks[12];
+            const ringTip = landmarks[16];
+            const pinkyTip = landmarks[20];
+            const wrist = landmarks[0];
+
+            // Helper function: distance between two points
+            const distance = (p1, p2) => {
+                return Math.sqrt(
+                    Math.pow(p1.x - p2.x, 2) +
+                    Math.pow(p1.y - p2.y, 2) +
+                    Math.pow(p1.z - p2.z, 2)
+                );
+            };
+
+            // Check if finger is extended
+            const isExtended = (tip, base) => {
+                return tip.y < base.y; // Tip is above base
+            };
+
+            const indexExtended = isExtended(indexTip, landmarks[6]);
+            const middleExtended = isExtended(middleTip, landmarks[10]);
+            const ringExtended = isExtended(ringTip, landmarks[14]);
+            const pinkyExtended = isExtended(pinkyTip, landmarks[18]);
+
+            // PINCH: Thumb and index finger close together
+            const pinchDistance = distance(thumbTip, indexTip);
+            if (pinchDistance < 0.05) {
+                return 'pinch';
+            }
+
+            // VICTORY: Index and middle extended, ring and pinky closed
+            if (indexExtended && middleExtended && !ringExtended && !pinkyExtended) {
+                return 'victory';
+            }
+
+            // FIST: All fingers closed
+            const allClosed = !indexExtended && !middleExtended && !ringExtended && !pinkyExtended;
+            if (allClosed) {
+                return 'fist';
+            }
+
+            // OPEN PALM: All fingers extended
+            const allExtended = indexExtended && middleExtended && ringExtended && pinkyExtended;
+            if (allExtended) {
+                return 'open';
+            }
+
+            return null;
+        }
+
+        // ============================================
+        // LEARNING NOTE: 双手手势识别
+        // ============================================
+        // 1. 双手缩放：计算两只手之间的距离，距离变化控制缩放
+        // 2. 双手点赞：检测两只手的大拇指是否都向上
+
+        function handleTwoHandGestures(hand1, hand2) {
+            // 计算两只手的中心点（手腕位置）
+            const hand1Center = hand1[0]; // 手腕
+            const hand2Center = hand2[0];
+            
+            // 计算两手之间的距离
+            const distance = Math.sqrt(
+                Math.pow(hand1Center.x - hand2Center.x, 2) +
+                Math.pow(hand1Center.y - hand2Center.y, 2) +
+                Math.pow(hand1Center.z - hand2Center.z, 2)
+            );
+            
+            // 检查双手点赞手势（烟花效果）
+            const hand1ThumbsUp = isThumbsUp(hand1);
+            const hand2ThumbsUp = isThumbsUp(hand2);
+            
+            if (hand1ThumbsUp && hand2ThumbsUp) {
+                if (!fireworksActive) {
+                    triggerFireworks();
+                    fireworksActive = true;
+                    updateStatus('👍👍 Салют！');
+                }
+            } else {
+                fireworksActive = false;
+            }
+            
+            // 双手缩放图片功能
+            if (currentMode === 'photo' && focusedPhotoMesh) {
+                if (lastHandDistance > 0) {
+                    // 计算距离变化比例
+                    const scaleChange = distance / lastHandDistance;
+                    currentPhotoScale *= scaleChange;
+                    
+                    // 限制缩放范围
+                    currentPhotoScale = Math.max(0.5, Math.min(currentPhotoScale, 3));
+                    
+                    // 应用缩放
+                    focusedPhotoMesh.scale.set(
+                        currentPhotoScale * 1.5,
+                        currentPhotoScale * 1.5,
+                        currentPhotoScale * 1.5
+                    );
+                    
+                    updateStatus(`🤲 Хоёр гараа томруулж жижигрүүлэх: ${Math.round(currentPhotoScale * 100)}%`);
+                }
+                lastHandDistance = distance;
+            } else {
+                lastHandDistance = distance;
+            }
+        }
+
+        // 检测大拇指向上手势
+        function isThumbsUp(landmarks) {
+            const thumbTip = landmarks[4];
+            const thumbIP = landmarks[3];
+            const thumbMCP = landmarks[2];
+            const indexMCP = landmarks[5];
+            const pinkyMCP = landmarks[17];
+            
+            // 大拇指向上：拇指尖在拇指根部上方
+            const thumbUp = thumbTip.y < thumbMCP.y - 0.1;
+            
+            // 其他手指收起：食指和小指的MCP关节在相近高度
+            const fingersClosed = Math.abs(indexMCP.y - pinkyMCP.y) < 0.15;
+            
+            return thumbUp && fingersClosed;
+        }
+
+        // 触发烟花效果
+        function triggerFireworks() {
+            // 在随机位置创建多个烟花
+            for (let i = 0; i < 3; i++) {
+                setTimeout(() => {
+                    const x = (Math.random() - 0.5) * 10;
+                    const y = Math.random() * 5;
+                    const z = (Math.random() - 0.5) * 5;
+                    createFirework(x, y, z);
+                }, i * 200);
+            }
+        }
+
+        function handleGesture(gesture) {
+            switch (gesture) {
+                case 'fist':
+                    hidePhotos();
+                    formChristmasTree();
+                    rotationEnabled = false;
+                    break;
+                case 'open':
+                    hidePhotos();
+                    disperseParticles();
+                    break;
+                case 'pinch':
+                    showPhotoFocus();
+                    rotationEnabled = false;
+                    break;
+                case 'victory':
+                    showGallery();
+                    rotationEnabled = false;
+                    break;
+            }
+        }
+
+        // ============================================
+        // Animation Loop
+        // ============================================
+        function animate() {
+            requestAnimationFrame(animate);
+
+            // Get audio level for visualization
+            const audioLevel = getAudioLevel();
+
+            // Update particles
+            updateParticles();
+            
+            // Update fireworks
+            updateFireworks();
+
+            // Make particles and lights react to music
+            if (musicPlaying && particles.mesh) {
+                // Scale particle size based on audio
+                const material = particles.mesh.material;
+                material.size = 0.1 + audioLevel * 0.15;
+                
+                // Add subtle pulsing rotation
+                particles.mesh.rotation.y += 0.001 + audioLevel * 0.01;
+
+                // Make lights pulse with music
+                const spotlight1 = scene.getObjectByName('spotlight1');
+                const spotlight2 = scene.getObjectByName('spotlight2');
+                const pointLight1 = scene.getObjectByName('pointLight1');
+
+                if (spotlight1) spotlight1.intensity = 1 + audioLevel * 0.5;
+                if (spotlight2) spotlight2.intensity = 0.8 + audioLevel * 0.4;
+                if (pointLight1) pointLight1.intensity = 0.5 + audioLevel * 0.8;
+            }
+
+            // Rotate scene if enabled
+            if (rotationEnabled && particles.mesh) {
+                particles.mesh.rotation.y += CONFIG.rotationSpeed;
+            }
+
+            // Render the scene
+            renderer.render(scene, camera);
+        }
+
+        // ============================================
+        // UI Controls
+        // ============================================
+        function updateStatus(message) {
+            document.getElementById('status').textContent = message;
+        }
+
+        function toggleUI() {
+            const overlay = document.getElementById('ui-overlay');
+            overlay.classList.toggle('hidden');
+        }
+
+        function onWindowResize() {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        }
+
+        // ============================================
+        // Event Listeners
+        // ============================================
+        document.getElementById('upload-btn').addEventListener('click', () => {
+            document.getElementById('file-input').click();
+        });
+
+        document.getElementById('file-input').addEventListener('change', handlePhotoUpload);
+
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'h' || e.key === 'H') {
+                toggleUI();
+            }
+            // Spacebar to toggle music
+            if (e.key === ' ' || e.key === 'Spacebar') {
+                e.preventDefault();
+                toggleMusic();
+            }
+            // M key to toggle music
+            if (e.key === 'm' || e.key === 'M') {
+                toggleMusic();
+            }
+        });
+
+        // ============================================
+        // Initialization
+        // ============================================
+        async function init() {
+            try {
+                // Initialize Three.js
+                initThreeJS();
+                createParticleSystem();
+
+                // Initialize Music Controls
+                initMusic();
+
+                // Initialize MediaPipe
+                await initMediaPipe();
+
+                // Set canvas sizes
+                handCanvas.width = 320;
+                handCanvas.height = 240;
+
+                // Start animation
+                animate();
+
+                // Hide loading screen
+                setTimeout(() => {
+                    document.getElementById('loading').style.display = 'none';
+                    updateStatus('👋 Дохио хийнэ үү');
+                }, 2000);
+
+            } catch (error) {
+                console.error('Initialization error:', error);
+                document.getElementById('loading-text').textContent = '错误: ' + error.message;
+            }
+        }
+
+        // Start the application
+        init();
+    </script>
+</body>
+</html>
